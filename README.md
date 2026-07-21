@@ -1,6 +1,6 @@
 # Weather Air Pollution App
 
-[![GitHub stars](https://img.shields.io/github/stars/gituserc1140/Weather-Solar-Irradiance-App?style=social)](https://github.com/gituserc1140/Weather-Air-Pollution-App)
+[![GitHub stars](https://img.shields.io/github/stars/gituserc1140/Weather-Air-Pollution-App?style=social)](https://github.com/gituserc1140/Weather-Air-Pollution-App)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://weather-air-pollution-app-f5zdx4sgeuzwlt2pq3pflh.streamlit.app/)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors)](https://github.com/sponsors/gituserc1140)
 
@@ -32,8 +32,8 @@ A Streamlit web app that lets you fetch and visualise real-time, forecast, and h
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/gituserc1140/Weather-Solar-Irradiance-App.git
-cd Weather-Solar-Irradiance-App
+git clone https://github.com/gituserc1140/Weather-Air-Pollution-App.git
+cd Weather-Air-Pollution-App
 
 # 2. Install dependencies
 pip install -r requirements.txt
@@ -108,5 +108,5 @@ The sidebar input always takes priority over pre-configured values.
 
 If you find this app useful, please consider giving it a star on GitHub or sponsoring the author:
 
-[![Star on GitHub](https://img.shields.io/badge/Star%20on%20GitHub-%E2%AD%90-yellow?logo=github)](https://github.com/gituserc1140/Weather-Solar-Irradiance-App)
+[![Star on GitHub](https://img.shields.io/badge/Star%20on%20GitHub-%E2%AD%90-yellow?logo=github)](https://github.com/gituserc1140/Weather-Air-Pollution-App)
 [![Sponsor](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors)](https://github.com/sponsors/gituserc1140)
