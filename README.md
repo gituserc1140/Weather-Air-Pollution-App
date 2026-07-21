@@ -1,19 +1,19 @@
-# ☀️ Weather Solar Irradiance App
+# 🌿 Weather Air Pollution App
 
 [![GitHub stars](https://img.shields.io/github/stars/gituserc1140/Weather-Solar-Irradiance-App?style=social)](https://github.com/gituserc1140/Weather-Solar-Irradiance-App)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors)](https://github.com/sponsors/gituserc1140)
 
-A Streamlit web app that lets you fetch and visualise real-time solar irradiance data (GHI, DNI, DHI) for any location on Earth using the [OpenWeatherMap Solar Irradiance API](https://openweathermap.org/api/solar-irradiance).
+A Streamlit web app that lets you fetch and visualise real-time, forecast, and historical air quality data (AQI and pollutant concentrations) for any location on Earth using the free [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution).
 
 ---
 
 ## Features
 
-- 🔑 **Front-end API key input** — enter your OpenWeatherMap key directly in the app sidebar; no config files required
+- 🔑 **Front-end API key input** — enter your free OpenWeatherMap key directly in the app sidebar; no config files required
 - 📍 **Location picker** — enter latitude/longitude for any global location
-- 📅 **Date & time-step selection** — choose hourly (1 h), 3-hourly, or daily aggregation
-- 📊 **Interactive charts** — line chart for GHI/DNI/DHI irradiance, bar chart for cloud cover and sunshine duration
-- 📋 **Data table** — full tabular view of all returned records
+- 🔄 **Three data modes** — Current snapshot, Forecast (up to 5 days ahead, hourly), or Historical (custom date range)
+- 📈 **Interactive charts** — line charts for PM2.5, PM10, O₃, NO₂, CO, and SO₂ concentrations over time
+- 📋 **Data table** — full tabular view of all returned records including AQI and all 8 pollutant components
 - 🌙 **Dark theme** — polished gradient UI
 
 ---
@@ -23,7 +23,7 @@ A Streamlit web app that lets you fetch and visualise real-time solar irradiance
 | Requirement | Details |
 |---|---|
 | Python | 3.9 or newer |
-| OpenWeatherMap API key | Free tier available — sign up at [openweathermap.org](https://home.openweathermap.org/users/sign_up) and subscribe to the [Solar Irradiance API](https://openweathermap.org/api/solar-irradiance) |
+| OpenWeatherMap API key | **Free** — sign up at [openweathermap.org](https://home.openweathermap.org/users/sign_up); the Air Pollution API is included in the free plan |
 
 ---
 
@@ -47,24 +47,40 @@ The app opens automatically in your browser at `http://localhost:8501`.
 
 ## How to Use
 
-1. **Enter your API key** — paste your OpenWeatherMap API key into the *OpenWeatherMap API Key* field in the left sidebar. The key is masked for security.
+1. **Enter your API key** — paste your free OpenWeatherMap API key into the *OpenWeatherMap API Key* field in the left sidebar. The key is masked for security.
 2. **Set location** — enter the *Latitude* and *Longitude* of the place you want data for (e.g. London: 51.5074, -0.1278).
-3. **Choose query options**:
-   - **Date** — the calendar date to query (defaults to today).
-   - **Time Step** — `Hourly (1h)`, `3-Hourly (3h)`, or `Daily`.
-   - **Max Records** — how many time steps to return (up to 48 for hourly, 16 for daily).
-4. **Click ☀️ Fetch Solar Irradiance** — the app calls the API and displays:
-   - A line chart of **GHI / DNI / DHI** irradiance (W/m²) over time.
-   - A bar chart of **cloud cover (%)** and **sunshine duration (min)**.
+3. **Choose a data mode**:
+   - **Current** — fetches the latest air quality snapshot for the location.
+   - **Forecast (5 days)** — returns hourly predictions for the next 5 days.
+   - **Historical** — pick a start and end date to retrieve past air quality data.
+4. **Click 🌿 Fetch Air Pollution Data** — the app calls the API and displays:
+   - Summary metrics for the latest AQI, PM2.5, and PM10 readings.
+   - A line chart of **PM2.5 / PM10 / O₃ / NO₂** concentrations (μg/m³) over time.
+   - A line chart of **CO** and **SO₂** concentrations over time.
    - A full data table you can sort and scroll.
 
-### Solar irradiance terms
+### Air Quality Index (AQI)
 
-| Abbreviation | Meaning |
+| AQI Value | Level |
 |---|---|
-| **GHI** | Global Horizontal Irradiance — total solar radiation on a horizontal surface (W/m²) |
-| **DNI** | Direct Normal Irradiance — beam radiation perpendicular to the sun (W/m²) |
-| **DHI** | Diffuse Horizontal Irradiance — scattered sky radiation on a horizontal surface (W/m²) |
+| 1 | Good 🟢 |
+| 2 | Fair 🟡 |
+| 3 | Moderate 🟠 |
+| 4 | Poor 🔴 |
+| 5 | Very Poor 🟣 |
+
+### Pollutant components (all in μg/m³)
+
+| Field | Pollutant |
+|---|---|
+| `co` | Carbon monoxide |
+| `no` | Nitrogen monoxide |
+| `no2` | Nitrogen dioxide |
+| `o3` | Ozone |
+| `so2` | Sulphur dioxide |
+| `pm2_5` | Fine particulate matter (< 2.5 μm) |
+| `pm10` | Coarse particulate matter (< 10 μm) |
+| `nh3` | Ammonia |
 
 ---
 
