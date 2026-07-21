@@ -1,19 +1,21 @@
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 import requests
 import streamlit as st
 
-SOLAR_API_URL = "https://api.openweathermap.org/energy/1.0/solar/data"
+AIR_POLLUTION_BASE_URL = "https://api.openweathermap.org/data/2.5/air_pollution"
 GITHUB_URL = "https://github.com/gituserc1140/Weather-Solar-Irradiance-App"
 GITHUB_SPONSOR_URL = "https://github.com/sponsors/gituserc1140"
+
+AQI_LABELS = {1: "Good 🟢", 2: "Fair 🟡", 3: "Moderate 🟠", 4: "Poor 🔴", 5: "Very Poor 🟣"}
 
 _CSS = """
 <style>
 /* ── Page background ─────────────────────────────────────────── */
 [data-testid="stAppViewContainer"] {
-    background: linear-gradient(135deg, #0d1117, #161b22, #1a1f2e);
+    background: linear-gradient(135deg, #0d1117, #161b22, #0d1f2d);
     min-height: 100vh;
 }
 [data-testid="stHeader"] { background: transparent; }
@@ -26,7 +28,7 @@ _CSS = """
 .hero h1 {
     font-size: 2.4rem;
     font-weight: 800;
-    background: linear-gradient(90deg, #fbbf24, #f59e0b, #ef4444);
+    background: linear-gradient(90deg, #34d399, #3b82f6, #6366f1);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.3rem;
@@ -70,7 +72,7 @@ _CSS = """
 
 /* ── Fetch button ────────────────────────────────────────────── */
 [data-testid="stButton"] button {
-    background: linear-gradient(135deg, #f59e0b, #ef4444) !important;
+    background: linear-gradient(135deg, #34d399, #3b82f6) !important;
     color: #fff !important;
     border: none !important;
     border-radius: 8px !important;
@@ -84,17 +86,17 @@ _CSS = """
 /* ── Sidebar ─────────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
     background: rgba(13,17,23,0.92);
-    border-right: 1px solid rgba(251,191,36,0.15);
+    border-right: 1px solid rgba(52,211,153,0.15);
 }
 [data-testid="stSidebar"] label,
 [data-testid="stSidebar"] p,
 [data-testid="stSidebar"] span,
 [data-testid="stSidebar"] div { color: #94a3b8 !important; }
-[data-testid="stSidebar"] h2 { color: #fbbf24 !important; font-size: 1.1rem; }
+[data-testid="stSidebar"] h2 { color: #34d399 !important; font-size: 1.1rem; }
 
 /* ── Alerts / spinners ───────────────────────────────────────── */
 [data-testid="stAlert"] p { color: #ffffff !important; }
-[data-testid="stSpinner"] p { color: #fbbf24 !important; }
+[data-testid="stSpinner"] p { color: #34d399 !important; }
 </style>
 """
 
@@ -122,51 +124,67 @@ def get_configured_api_key():
     return os.getenv("OPENWEATHERMAP_API_KEY", "")
 
 
-def fetch_solar_data(api_key, lat, lon, date_str, step, limit):
-    params = {
-        "lat": lat,
-        "lon": lon,
-        "date": date_str,
-        "step": step,
-        "limit": limit,
-        "appid": api_key,
-    }
-    return requests.get(SOLAR_API_URL, params=params, timeout=15)
+def fetch_air_pollution_data(api_key, lat, lon, mode, start_ts=None, end_ts=None):
+    """Fetch air pollution data from OpenWeatherMap.
+
+    mode: "current" | "forecast" | "historical"
+    start_ts / end_ts: Unix timestamps required for historical mode.
+    """
+    if mode == "current":
+        url = AIR_POLLUTION_BASE_URL
+        params = {"lat": lat, "lon": lon, "appid": api_key}
+    elif mode == "forecast":
+        url = f"{AIR_POLLUTION_BASE_URL}/forecast"
+        params = {"lat": lat, "lon": lon, "appid": api_key}
+    else:  # historical
+        url = f"{AIR_POLLUTION_BASE_URL}/history"
+        params = {"lat": lat, "lon": lon, "start": start_ts, "end": end_ts, "appid": api_key}
+    return requests.get(url, params=params, timeout=15)
 
 
-def render_results(payload):
-    records = payload.get("data", [])
+def render_results(payload, lat, lon):
+    records = payload.get("list", [])
     if not records:
-        st.info("No solar data returned for the selected parameters.")
+        st.info("No air pollution data returned for the selected parameters.")
         return
 
     rows = []
     for rec in records:
-        ts = datetime.fromtimestamp(rec["timestamp"]).strftime("%Y-%m-%d %H:%M")
-        # The OWM Solar Irradiance API uses "gh_irradiance"/"dn_irradiance"/"dh_irradiance"
-        # in its current response format; "ghi"/"dni"/"dhi" are the legacy short-form keys
-        # retained here as a fallback for older API versions.
+        ts = datetime.fromtimestamp(rec["dt"], tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        comp = rec.get("components", {})
         rows.append({
             "Time": ts,
-            "GHI (W/m²)": rec.get("gh_irradiance", rec.get("ghi", 0)),
-            "DNI (W/m²)": rec.get("dn_irradiance", rec.get("dni", 0)),
-            "DHI (W/m²)": rec.get("dh_irradiance", rec.get("dhi", 0)),
-            "Cloud Cover (%)": rec.get("cloudy", 0),
-            "Sunshine (min)": rec.get("sunshine_duration", 0),
+            "AQI": rec.get("main", {}).get("aqi", None),
+            "CO (μg/m³)": comp.get("co", 0),
+            "NO (μg/m³)": comp.get("no", 0),
+            "NO₂ (μg/m³)": comp.get("no2", 0),
+            "O₃ (μg/m³)": comp.get("o3", 0),
+            "SO₂ (μg/m³)": comp.get("so2", 0),
+            "PM2.5 (μg/m³)": comp.get("pm2_5", 0),
+            "PM10 (μg/m³)": comp.get("pm10", 0),
+            "NH₃ (μg/m³)": comp.get("nh3", 0),
         })
 
     df = pd.DataFrame(rows).set_index("Time")
 
+    # Summary metric for current / latest record
+    latest_aqi = int(df["AQI"].iloc[0]) if pd.notna(df["AQI"].iloc[0]) else None
+    aqi_label = AQI_LABELS.get(latest_aqi, "Unknown")
+
     st.success(
-        f"✅ Retrieved {len(records)} record(s) — "
-        f"lat {payload.get('lat')}, lon {payload.get('lon')}"
+        f"✅ Retrieved {len(records)} record(s) — lat {lat}, lon {lon}"
     )
 
-    st.subheader("📊 Irradiance Over Time")
-    st.line_chart(df[["GHI (W/m²)", "DNI (W/m²)", "DHI (W/m²)"]])
+    col_aqi, col_pm25, col_pm10 = st.columns(3)
+    col_aqi.metric("Air Quality Index (latest)", aqi_label)
+    col_pm25.metric("PM2.5 — latest (μg/m³)", f"{df['PM2.5 (μg/m³)'].iloc[0]:.2f}")
+    col_pm10.metric("PM10 — latest (μg/m³)", f"{df['PM10 (μg/m³)'].iloc[0]:.2f}")
 
-    st.subheader("☁️ Cloud Cover & Sunshine Duration")
-    st.bar_chart(df[["Cloud Cover (%)", "Sunshine (min)"]])
+    st.subheader("📈 Key Pollutants Over Time")
+    st.line_chart(df[["PM2.5 (μg/m³)", "PM10 (μg/m³)", "O₃ (μg/m³)", "NO₂ (μg/m³)"]])
+
+    st.subheader("📊 CO & SO₂ Over Time")
+    st.line_chart(df[["CO (μg/m³)", "SO₂ (μg/m³)"]])
 
     st.subheader("📋 Full Data Table")
     st.dataframe(df, use_container_width=True)
@@ -174,8 +192,8 @@ def render_results(payload):
 
 def main():
     st.set_page_config(
-        page_title="Weather Solar Irradiance App",
-        page_icon="☀️",
+        page_title="Weather Air Pollution App",
+        page_icon="🌿",
         layout="centered",
     )
     st.markdown(_CSS, unsafe_allow_html=True)
@@ -184,8 +202,8 @@ def main():
     st.markdown(
         """
         <div class="hero">
-            <h1>☀️ Weather Solar Irradiance App</h1>
-            <p>Fetch and visualise GHI, DNI, and DHI solar irradiance for any global location.</p>
+            <h1>🌿 Weather Air Pollution App</h1>
+            <p>Fetch and visualise real-time, forecast, and historical air quality data for any global location.</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -215,8 +233,8 @@ def main():
         "OpenWeatherMap API Key",
         type="password",
         help=(
-            "Enter your OpenWeatherMap API key. "
-            "Get a free key at https://openweathermap.org/api/solar-irradiance"
+            "Enter your free OpenWeatherMap API key. "
+            "Get one at https://openweathermap.org/api/air-pollution"
         ),
     )
     stripped = api_key_input.strip()
@@ -225,7 +243,7 @@ def main():
     if not api_key:
         st.warning(
             "🔑 Please enter your **OpenWeatherMap API key** in the sidebar to continue. "
-            "Get a free key at [openweathermap.org](https://openweathermap.org/api/solar-irradiance)."
+            "Get a free key at [openweathermap.org](https://openweathermap.org/api/air-pollution)."
         )
         st.stop()
 
@@ -243,37 +261,54 @@ def main():
             step=0.0001, format="%.4f",
         )
 
-    # Query options
+    # Query mode
     st.subheader("🔧 Query Options")
-    col3, col4, col5 = st.columns(3)
-    with col3:
-        selected_date = st.date_input("Date", value=date.today())
-    with col4:
-        step_label = st.selectbox(
-            "Time Step",
-            options=["Hourly (1h)", "3-Hourly (3h)", "Daily"],
-            index=0,
-        )
-    with col5:
-        max_records = 16 if step_label == "Daily" else 48
-        limit = st.number_input(
-            "Max Records", value=min(24, max_records),
-            min_value=1, max_value=max_records, step=1,
-        )
+    mode = st.radio(
+        "Data Mode",
+        options=["Current", "Forecast (5 days)", "Historical"],
+        horizontal=True,
+        help=(
+            "**Current** — latest AQI snapshot. "
+            "**Forecast** — hourly predictions up to 5 days ahead. "
+            "**Historical** — past data by date range (up to 1 year back)."
+        ),
+    )
 
-    step_map = {"Hourly (1h)": 1, "3-Hourly (3h)": 3, "Daily": "day"}
-    step = step_map[step_label]
+    start_ts = end_ts = None
+    if mode == "Historical":
+        col3, col4 = st.columns(2)
+        with col3:
+            start_date = st.date_input(
+                "Start Date",
+                value=date.today() - timedelta(days=7),
+                max_value=date.today(),
+            )
+        with col4:
+            end_date = st.date_input(
+                "End Date",
+                value=date.today(),
+                max_value=date.today(),
+            )
+        if start_date > end_date:
+            st.error("⚠️ Start date must be before or equal to end date.")
+            st.stop()
+        start_ts = int(datetime(start_date.year, start_date.month, start_date.day,
+                                tzinfo=timezone.utc).timestamp())
+        end_ts = int(datetime(end_date.year, end_date.month, end_date.day, 23, 59, 59,
+                              tzinfo=timezone.utc).timestamp())
 
-    if st.button("☀️ Fetch Solar Irradiance"):
-        with st.spinner("Fetching solar irradiance data…"):
+    mode_key = {"Current": "current", "Forecast (5 days)": "forecast", "Historical": "historical"}[mode]
+
+    if st.button("🌿 Fetch Air Pollution Data"):
+        with st.spinner("Fetching air pollution data…"):
             try:
-                response = fetch_solar_data(api_key, lat, lon, str(selected_date), step, int(limit))
+                response = fetch_air_pollution_data(api_key, lat, lon, mode_key, start_ts, end_ts)
             except requests.exceptions.RequestException as exc:
                 st.error(f"⚠️ Request failed: {exc}")
                 return
 
         if response.status_code == 200:
-            render_results(response.json())
+            render_results(response.json(), lat, lon)
         elif response.status_code == 401:
             st.error("❌ Invalid API key. Please check your OpenWeatherMap API key and try again.")
         elif response.status_code == 429:
