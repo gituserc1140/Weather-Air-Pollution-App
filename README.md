@@ -1,7 +1,7 @@
 # Weather Air Pollution App
 
 [![GitHub stars](https://img.shields.io/github/stars/gituserc1140/Weather-Solar-Irradiance-App?style=social)](https://github.com/gituserc1140/Weather-Air-Pollution-App)
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://weather-solar-irradiance-app-f5zdx4sgeuzwlt2pq3pflh.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://weather-air-pollution-app-f5zdx4sgeuzwlt2pq3pflh.streamlit.app/)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink?logo=github-sponsors)](https://github.com/sponsors/gituserc1140)
 
 A Streamlit web app that lets you fetch and visualise real-time, forecast, and historical air quality data (AQI and pollutant concentrations) for any location on Earth using the free [OpenWeatherMap Air Pollution API](https://openweathermap.org/api/air-pollution).
