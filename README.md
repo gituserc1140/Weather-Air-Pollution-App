@@ -22,7 +22,7 @@ A Streamlit web app that lets you fetch and visualise real-time solar irradiance
 
 | Requirement | Details |
 |---|---|
-| Python | 3.8 or newer |
+| Python | 3.9 or newer |
 | OpenWeatherMap API key | Free tier available — sign up at [openweathermap.org](https://home.openweathermap.org/users/sign_up) and subscribe to the [Solar Irradiance API](https://openweathermap.org/api/solar-irradiance) |
 
 ---

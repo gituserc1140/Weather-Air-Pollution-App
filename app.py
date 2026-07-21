@@ -143,6 +143,9 @@ def render_results(payload):
     rows = []
     for rec in records:
         ts = datetime.fromtimestamp(rec["timestamp"]).strftime("%Y-%m-%d %H:%M")
+        # The OWM Solar Irradiance API uses "gh_irradiance"/"dn_irradiance"/"dh_irradiance"
+        # in its current response format; "ghi"/"dni"/"dhi" are the legacy short-form keys
+        # retained here as a fallback for older API versions.
         rows.append({
             "Time": ts,
             "GHI (W/m²)": rec.get("gh_irradiance", rec.get("ghi", 0)),
