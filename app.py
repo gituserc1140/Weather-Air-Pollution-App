@@ -9,7 +9,7 @@ AIR_POLLUTION_BASE_URL = "https://api.openweathermap.org/data/2.5/air_pollution"
 GITHUB_URL = "https://github.com/gituserc1140/Weather-Solar-Irradiance-App"
 GITHUB_SPONSOR_URL = "https://github.com/sponsors/gituserc1140"
 
-AQI_LABELS = {1: "Good 🟢", 2: "Fair 🟡", 3: "Moderate 🟠", 4: "Poor 🔴", 5: "Very Poor 🟣"}
+AQI_LABELS = {1: "Good", 2: "Fair", 3: "Moderate", 4: "Poor", 5: "Very Poor"}
 
 _CSS = """
 <style>
@@ -106,13 +106,13 @@ _SIDEBAR_BUTTONS = """
      style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;
             border-radius:7px;background:#24292f;color:#f0f6fc !important;
             border:1px solid #444c56;font-weight:600;font-size:0.82rem;text-decoration:none;">
-    ⭐ GitHub
+    GitHub
   </a>
   <a href="https://github.com/sponsors/gituserc1140" target="_blank"
      style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;
             border-radius:7px;background:linear-gradient(135deg,#db61a2,#ea4899);
             color:#fff !important;font-weight:600;font-size:0.82rem;text-decoration:none;">
-    ❤️ Sponsor
+    Sponsor
   </a>
 </div>
 """
@@ -172,7 +172,7 @@ def render_results(payload, lat, lon):
     aqi_label = AQI_LABELS.get(latest_aqi, "Unknown")
 
     st.success(
-        f"✅ Retrieved {len(records)} record(s) — lat {lat}, lon {lon}"
+        f"Retrieved {len(records)} record(s) — lat {lat}, lon {lon}"
     )
 
     col_aqi, col_pm25, col_pm10 = st.columns(3)
@@ -180,20 +180,20 @@ def render_results(payload, lat, lon):
     col_pm25.metric("PM2.5 — latest (μg/m³)", f"{df['PM2.5 (μg/m³)'].iloc[0]:.2f}")
     col_pm10.metric("PM10 — latest (μg/m³)", f"{df['PM10 (μg/m³)'].iloc[0]:.2f}")
 
-    st.subheader("📈 Key Pollutants Over Time")
+    st.subheader("Key Pollutants Over Time")
     st.line_chart(df[["PM2.5 (μg/m³)", "PM10 (μg/m³)", "O₃ (μg/m³)", "NO₂ (μg/m³)"]])
 
-    st.subheader("📊 CO & SO₂ Over Time")
+    st.subheader("CO & SO₂ Over Time")
     st.line_chart(df[["CO (μg/m³)", "SO₂ (μg/m³)"]])
 
-    st.subheader("📋 Full Data Table")
+    st.subheader("Full Data Table")
     st.dataframe(df, use_container_width=True)
 
 
 def main():
     st.set_page_config(
         page_title="Weather Air Pollution App",
-        page_icon="🌿",
+        page_icon=None,
         layout="centered",
     )
     st.markdown(_CSS, unsafe_allow_html=True)
@@ -202,7 +202,7 @@ def main():
     st.markdown(
         """
         <div class="hero">
-            <h1>🌿 Weather Air Pollution App</h1>
+            <h1>Weather Air Pollution App</h1>
             <p>Fetch and visualise real-time, forecast, and historical air quality data for any global location.</p>
         </div>
         """,
@@ -215,11 +215,11 @@ def main():
         <div class="gh-buttons">
           <a class="gh-btn gh-btn-github"
              href="https://github.com/gituserc1140/Weather-Solar-Irradiance-App" target="_blank">
-            ⭐ Star on GitHub
+            Star on GitHub
           </a>
           <a class="gh-btn gh-btn-sponsor"
              href="https://github.com/sponsors/gituserc1140" target="_blank">
-            ❤️ Sponsor
+            Sponsor
           </a>
         </div>
         """,
@@ -227,7 +227,7 @@ def main():
     )
 
     # Sidebar — API key + buttons
-    st.sidebar.header("⚙️ Settings")
+    st.sidebar.header("Settings")
     st.sidebar.markdown(_SIDEBAR_BUTTONS, unsafe_allow_html=True)
     api_key_input = st.sidebar.text_input(
         "OpenWeatherMap API Key",
@@ -242,13 +242,13 @@ def main():
 
     if not api_key:
         st.warning(
-            "🔑 Please enter your **OpenWeatherMap API key** in the sidebar to continue. "
+            "Please enter your **OpenWeatherMap API key** in the sidebar to continue. "
             "Get a free key at [openweathermap.org](https://openweathermap.org/api/air-pollution)."
         )
         st.stop()
 
     # Location
-    st.subheader("📍 Location")
+    st.subheader("Location")
     col1, col2 = st.columns(2)
     with col1:
         lat = st.number_input(
@@ -262,7 +262,7 @@ def main():
         )
 
     # Query mode
-    st.subheader("🔧 Query Options")
+    st.subheader("Query Options")
     mode = st.radio(
         "Data Mode",
         options=["Current", "Forecast (5 days)", "Historical"],
@@ -290,7 +290,7 @@ def main():
                 max_value=date.today(),
             )
         if start_date > end_date:
-            st.error("⚠️ Start date must be before or equal to end date.")
+            st.error("Start date must be before or equal to end date.")
             st.stop()
         start_ts = int(datetime(start_date.year, start_date.month, start_date.day,
                                 tzinfo=timezone.utc).timestamp())
@@ -299,20 +299,20 @@ def main():
 
     mode_key = {"Current": "current", "Forecast (5 days)": "forecast", "Historical": "historical"}[mode]
 
-    if st.button("🌿 Fetch Air Pollution Data"):
+    if st.button("Fetch Air Pollution Data"):
         with st.spinner("Fetching air pollution data…"):
             try:
                 response = fetch_air_pollution_data(api_key, lat, lon, mode_key, start_ts, end_ts)
             except requests.exceptions.RequestException as exc:
-                st.error(f"⚠️ Request failed: {exc}")
+                st.error(f"Request failed: {exc}")
                 return
 
         if response.status_code == 200:
             render_results(response.json(), lat, lon)
         elif response.status_code == 401:
-            st.error("❌ Invalid API key. Please check your OpenWeatherMap API key and try again.")
+            st.error("Invalid API key. Please check your OpenWeatherMap API key and try again.")
         elif response.status_code == 429:
-            st.error("⚠️ API rate limit exceeded. Please wait before making more requests.")
+            st.error("API rate limit exceeded. Please wait before making more requests.")
         else:
             err_data = {}
             try:
@@ -320,7 +320,7 @@ def main():
             except Exception:
                 pass
             st.error(
-                f"❌ API Error {response.status_code}: "
+                f"API Error {response.status_code}: "
                 f"{err_data.get('message', response.text or 'Unknown error')}"
             )
 
