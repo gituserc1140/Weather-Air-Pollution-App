@@ -6,7 +6,7 @@ import requests
 import streamlit as st
 
 AIR_POLLUTION_BASE_URL = "https://api.openweathermap.org/data/2.5/air_pollution"
-GITHUB_URL = "https://github.com/gituserc1140/Weather-Solar-Irradiance-App"
+GITHUB_URL = "https://github.com/gituserc1140/Weather-Air-Pollution-App"
 GITHUB_SPONSOR_URL = "https://github.com/sponsors/gituserc1140"
 
 AQI_LABELS = {1: "Good", 2: "Fair", 3: "Moderate", 4: "Poor", 5: "Very Poor"}
@@ -102,7 +102,7 @@ _CSS = """
 
 _SIDEBAR_BUTTONS = """
 <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin:0.4rem 0 1rem;">
-  <a href="https://github.com/gituserc1140/Weather-Solar-Irradiance-App" target="_blank"
+  <a href="https://github.com/gituserc1140/Weather-Air-Pollution-App" target="_blank"
      style="display:inline-flex;align-items:center;gap:0.35rem;padding:0.35rem 0.85rem;
             border-radius:7px;background:#24292f;color:#f0f6fc !important;
             border:1px solid #444c56;font-weight:600;font-size:0.82rem;text-decoration:none;">
@@ -214,7 +214,7 @@ def main():
         """
         <div class="gh-buttons">
           <a class="gh-btn gh-btn-github"
-             href="https://github.com/gituserc1140/Weather-Solar-Irradiance-App" target="_blank">
+             href="https://github.com/gituserc1140/Weather-Air-Pollution-App" target="_blank">
             Star on GitHub
           </a>
           <a class="gh-btn gh-btn-sponsor"
